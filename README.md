@@ -1,0 +1,1 @@
+# git-hooks-time-log-to-redmine
