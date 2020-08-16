@@ -1,0 +1,35 @@
+#!/bin/bash
+
+source $(dirname "$0")/functions.sh
+
+now=`date +%s`
+echo ${now}:checkout >> ${timeIssueFile}
+
+
+cat << EOF > ${redmineIssueFile}
+{
+  "issue": {
+    "status_id": "${REDMINE_IN_PROGRESS_STATUS_ID}"
+  }
+}
+EOF
+
+issue=$(getIssue)
+
+assignedToUserID=`echo $issue | jq -r ".issue.assigned_to.id"`
+if [ ${assignedToUserID} == "null" ]; then
+  cat << EOF > ${redmineIssueFile}
+{
+  "issue": {
+    "status_id": "${REDMINE_IN_PROGRESS_STATUS_ID}",
+    "assigned_to_id": "${userID}"
+  }
+}
+EOF
+
+fi
+
+updateIssue
+
+rm ${redmineIssueFile}
+

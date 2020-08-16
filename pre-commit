@@ -1,0 +1,59 @@
+#!/bin/bash
+
+source $(dirname "$0")/functions.sh
+
+if [ ! -f $timeIssueFile ]; then
+  echo Time file not found: $timeIssueFile
+fi
+
+now=`date +%s`
+
+lastTimeEntry=`tail -1 $timeIssueFile | cut -f 1 -d ":"`
+
+diffInSeconds=`expr $now - $lastTimeEntry`
+diffInMinutes=`expr $diffInSeconds / 60`
+diffInHours=`expr $diffInMinutes / 60`
+hourExtraMinutes=`expr $diffInMinutes % 60`
+
+timeToLog="${diffInHours}:${hourExtraMinutes}"
+
+echo $diffInSeconds
+echo $diffInMinutes
+echo $diffInHours
+echo $hourExtraMinutes
+echo $timeToLog
+echo ${issueID}
+
+echo "Log ${timeToLog} on issue ${issueID}? (Y/n)"
+read shouldLogTime
+
+if [ "${shouldLogTime}" == "n" ]; then
+  echo "Log your time (enter 0 to skip)"
+  read timeToLog
+  
+  if [ "${timeToLog}" == "0" ]; then
+    exit;
+  fi
+  
+fi
+
+echo Logging ${timeToLog}
+
+#9 == DEVELOPMENT
+
+cat << EOF > ${redmineIssueFile}
+{
+  "time_entry": {
+    "issue_id": "${issueID}",
+    "activity_id": "${REDMINE_ACTIVITY_ID}",
+    "hours": "${timeToLog}"
+  }
+}
+EOF
+
+logTimeEntry
+
+echo ${now}:commit >> $timeIssueFile
+
+rm ${redmineIssueFile}
+
