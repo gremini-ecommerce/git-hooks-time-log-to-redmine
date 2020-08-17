@@ -17,9 +17,8 @@ if [ ${assignedToUserID} == "null" ]; then
   }
 }
 EOF
-
+  
+  updateIssue
 fi
-
-updateIssue
 
 rm ${redmineIssueFile}
